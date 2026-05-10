@@ -27,3 +27,26 @@ class RequestLogger:
         with self._path.open("a", encoding="utf-8") as log_file:
             log_file.write(json.dumps(record, separators=(",", ":"), ensure_ascii=False))
             log_file.write("\n")
+
+    def read_recent(self, limit: int = 100) -> list[dict[str, Any]]:
+        bounded_limit = max(0, min(limit, 500))
+        if not self._path.exists():
+            return []
+
+        records: list[dict[str, Any]] = []
+        try:
+            for line in self._path.read_text(encoding="utf-8").splitlines():
+                if not line:
+                    continue
+                record = json.loads(line)
+                if isinstance(record, dict):
+                    record.pop("key", None)
+                    record.pop("api_key", None)
+                    records.append(record)
+        except (OSError, json.JSONDecodeError):
+            LOGGER.exception("Failed to read request log")
+            return []
+
+        return sorted(records, key=lambda item: str(item.get("time", "")), reverse=True)[
+            :bounded_limit
+        ]

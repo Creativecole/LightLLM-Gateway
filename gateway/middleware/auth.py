@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse
 
 from gateway.config import ApiKeyConfig, GatewayConfig
 
-PUBLIC_PATHS = {"/api/health", "/metrics"}
+PUBLIC_PATHS = {"/api/health", "/api/models", "/api/requests", "/metrics"}
 
 
 @dataclass(frozen=True)

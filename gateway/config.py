@@ -29,6 +29,7 @@ class ModelConfig(BaseModel):
     backend: str
     target: str | None = None
     endpoint: str | None = None
+    max_context_tokens: int | None = None
 
 
 class ModelsConfig(BaseModel):

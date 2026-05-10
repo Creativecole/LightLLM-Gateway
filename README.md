@@ -282,6 +282,41 @@ reports/benchmark.md
 
 Use `--output` to write the report somewhere else.
 
+## Dashboard
+
+The lightweight dashboard lives in `frontend/` and provides:
+
+- Metrics cards from `GET /metrics`
+- Recent request logs from `GET /api/requests`
+- Model configuration from `GET /api/models`
+- A Chat Playground for non-streaming and streaming chat completions
+
+Start the backend first:
+
+```bash
+python main.py
+```
+
+Start the frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend reads the backend base URL from `VITE_GATEWAY_API_BASE`. If it is not set, it defaults to:
+
+```text
+http://127.0.0.1:8000
+```
+
+Example:
+
+```bash
+VITE_GATEWAY_API_BASE=http://127.0.0.1:8000 npm run dev
+```
+
 ## Ollama Backend
 
 The gateway supports non-streaming and streaming Ollama forwarding for models configured with `backend: ollama`.

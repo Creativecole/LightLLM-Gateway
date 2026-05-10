@@ -11,15 +11,15 @@ auth:
       rpm: 60
 
 models:
-  default: mock-small
+  default: qwen2.5
   items:
+    - name: qwen2.5
+      backend: ollama
+      target: qwen2.5:0.5b
+      endpoint: http://127.0.0.1:11434
     - name: mock-small
       backend: mock
       target: mock-small
-    - name: llama3.1
-      backend: ollama
-      target: llama3.1
-      endpoint: http://127.0.0.1:11434
 
 cache:
   enabled: true

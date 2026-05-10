@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from gateway.cache.prompt_cache import PromptCache, build_cache_key
 from gateway.config import GatewayConfig, load_config
@@ -31,6 +32,13 @@ def create_app(config: GatewayConfig | None = None) -> FastAPI:
     )
     app.add_middleware(RateLimitMiddleware, config=app_config)
     app.add_middleware(AuthMiddleware, config=app_config)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.get("/api/health")
     def health() -> dict[str, str]:
@@ -39,6 +47,23 @@ def create_app(config: GatewayConfig | None = None) -> FastAPI:
     @app.get("/api/info")
     def info() -> dict[str, str]:
         return {"name": "LightLLM-Gateway", "version": "0.1.0"}
+
+    @app.get("/api/models")
+    def models() -> list[dict[str, object]]:
+        return [
+            {
+                "model": model.name,
+                "backend": model.backend,
+                "endpoint": model.endpoint,
+                "model_name": model.target or model.name,
+                "max_context_tokens": model.max_context_tokens,
+            }
+            for model in app_config.models.items
+        ]
+
+    @app.get("/api/requests")
+    def requests(limit: int = 100) -> list[dict[str, object]]:
+        return app.state.request_logger.read_recent(limit=limit)
 
     @app.get("/metrics")
     async def metrics() -> dict[str, object]:

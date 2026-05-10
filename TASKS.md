@@ -121,8 +121,14 @@ Completed notes:
 
 ## Phase 10: Frontend Dashboard
 
-- [ ] Add minimal dashboard route or frontend app.
-- [ ] Display metrics.
-- [ ] Display recent request logs.
-- [ ] Add refresh behavior.
-- [ ] Add basic dashboard tests where practical.
+- [x] Add minimal dashboard route or frontend app.
+- [x] Display metrics.
+- [x] Display recent request logs.
+- [x] Add refresh behavior.
+- [x] Add basic dashboard tests where practical.
+
+Completed notes:
+
+- Added React/Vite/TypeScript/Tailwind dashboard in `frontend/`.
+- Added `GET /api/requests` and `GET /api/models`.
+- Playground supports `stream=false` and `stream=true` chat calls.
