@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 
 from gateway.config import GatewayConfig, load_config
+from gateway.middleware.auth import AuthMiddleware
+from gateway.middleware.rate_limit import RateLimitMiddleware
 from gateway.router.model_router import ModelRouter
 from gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 
@@ -13,6 +15,8 @@ def create_app(config: GatewayConfig | None = None) -> FastAPI:
     app = FastAPI(title="LightLLM-Gateway")
     app.state.config = app_config
     app.state.model_router = ModelRouter(app_config)
+    app.add_middleware(RateLimitMiddleware, config=app_config)
+    app.add_middleware(AuthMiddleware, config=app_config)
 
     @app.get("/api/health")
     def health() -> dict[str, str]:

@@ -4,9 +4,11 @@ server:
   reload: false
 
 auth:
-  enabled: false
+  enabled: true
   api_keys:
-    - dev-token
+    - key: sk-demo
+      name: demo-user
+      rpm: 60
 
 models:
   default: mock-small

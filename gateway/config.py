@@ -15,7 +15,13 @@ class ServerConfig(BaseModel):
 
 class AuthConfig(BaseModel):
     enabled: bool = False
-    api_keys: list[str] = Field(default_factory=list)
+    api_keys: list["ApiKeyConfig"] = Field(default_factory=list)
+
+
+class ApiKeyConfig(BaseModel):
+    key: str
+    name: str
+    rpm: int = 60
 
 
 class ModelConfig(BaseModel):

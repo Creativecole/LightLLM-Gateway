@@ -2,6 +2,8 @@ from fastapi.testclient import TestClient
 
 from gateway.app import create_app
 
+AUTH_HEADERS = {"Authorization": "Bearer sk-demo"}
+
 
 def test_chat_completion_returns_mock_response() -> None:
     client = TestClient(create_app())
@@ -13,6 +15,7 @@ def test_chat_completion_returns_mock_response() -> None:
             "messages": [{"role": "user", "content": "Hello"}],
             "stream": False,
         },
+        headers=AUTH_HEADERS,
     )
 
     assert response.status_code == 200
@@ -33,6 +36,7 @@ def test_chat_completion_unknown_model_returns_404() -> None:
             "model": "missing-model",
             "messages": [{"role": "user", "content": "Hello"}],
         },
+        headers=AUTH_HEADERS,
     )
 
     assert response.status_code == 404
@@ -48,6 +52,7 @@ def test_chat_completion_response_schema_fields_exist() -> None:
             "model": "mock-small",
             "messages": [{"role": "user", "content": "Hello"}],
         },
+        headers=AUTH_HEADERS,
     )
 
     data = response.json()
@@ -69,6 +74,7 @@ def test_chat_completion_stream_true_is_rejected() -> None:
             "messages": [{"role": "user", "content": "Hello"}],
             "stream": True,
         },
+        headers=AUTH_HEADERS,
     )
 
     assert response.status_code == 200

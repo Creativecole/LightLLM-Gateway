@@ -2,7 +2,7 @@
 
 LightLLM-Gateway is a lightweight AI infrastructure project for building an OpenAI-compatible gateway in front of local and private LLM backends.
 
-The project is currently in the SSE streaming proxy phase. The foundation now includes a small application factory, health endpoint, empty metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, an Ollama backend, streaming SSE forwarding, project rules, phased tasks, reusable skills, and a repeatable verification script.
+The project is currently in the API key auth and rate limit phase. The foundation now includes a small application factory, health endpoint, empty metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, an Ollama backend, streaming SSE forwarding, API key auth, in-memory per-key rate limiting, project rules, phased tasks, reusable skills, and a repeatable verification script.
 
 ## Architecture
 
@@ -119,6 +119,7 @@ Send a non-streaming OpenAI-compatible chat completion request:
 ```bash
 curl -s http://127.0.0.1:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-demo" \
   -d '{
     "model": "mock-small",
     "messages": [
@@ -147,6 +148,29 @@ The mock backend returns a deterministic assistant message:
 }
 ```
 
+## API Key Auth And Rate Limit
+
+When `auth.enabled` is `true`, `/v1/chat/completions` requires:
+
+```text
+Authorization: Bearer <api_key>
+```
+
+`GET /api/health` and `GET /metrics` do not require auth.
+
+Configure API keys and per-key request limits in `config.yaml`:
+
+```yaml
+auth:
+  enabled: true
+  api_keys:
+    - key: sk-demo
+      name: demo-user
+      rpm: 60
+```
+
+`rpm` means requests per minute. The first implementation uses an in-memory sliding window per API key.
+
 ## Ollama Backend
 
 The gateway supports non-streaming and streaming Ollama forwarding for models configured with `backend: ollama`.
@@ -169,6 +193,7 @@ Call the gateway with an OpenAI-compatible request:
 ```bash
 curl -s http://127.0.0.1:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-demo" \
   -d '{
     "model": "llama3.1",
     "messages": [
@@ -183,6 +208,7 @@ Call the streaming path with `stream=true`:
 ```bash
 curl -N http://127.0.0.1:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-demo" \
   -d '{
     "model": "llama3.1",
     "messages": [

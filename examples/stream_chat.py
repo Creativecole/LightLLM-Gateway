@@ -17,6 +17,7 @@ async def main() -> None:
             "POST",
             "http://127.0.0.1:8000/v1/chat/completions",
             json=payload,
+            headers={"Authorization": "Bearer sk-demo"},
         ) as response:
             response.raise_for_status()
             async for line in response.aiter_lines():

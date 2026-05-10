@@ -65,11 +65,17 @@ Completed notes:
 
 ## Phase 6: Auth + Rate Limit
 
-- [ ] Add API key auth dependency or middleware.
-- [ ] Add local config for valid API keys.
-- [ ] Implement in-memory rate limiter.
-- [ ] Apply auth and rate limit to chat completions.
-- [ ] Add tests for valid auth, missing auth, invalid auth, and limit exceeded.
+- [x] Add API key auth dependency or middleware.
+- [x] Add local config for valid API keys.
+- [x] Implement in-memory rate limiter.
+- [x] Apply auth and rate limit to chat completions.
+- [x] Add tests for valid auth, missing auth, invalid auth, and limit exceeded.
+
+Completed notes:
+
+- `/v1/chat/completions` requires `Authorization: Bearer <api_key>` when auth is enabled.
+- `GET /api/health` and `GET /metrics` remain public.
+- Rate limiting uses an in-memory sliding window keyed by API key.
 
 ## Phase 7: Prompt Cache
 
