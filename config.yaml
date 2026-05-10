@@ -14,9 +14,10 @@ models:
     - name: mock-small
       backend: mock
       target: mock-small
-    - name: llama3.2
+    - name: llama3.1
       backend: ollama
-      target: llama3.2
+      target: llama3.1
+      endpoint: http://127.0.0.1:11434
 
 cache:
   enabled: true

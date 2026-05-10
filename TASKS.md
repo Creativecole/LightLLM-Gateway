@@ -43,11 +43,11 @@ Task status legend:
 
 ## Phase 4: Ollama Backend `stream=false`
 
-- [ ] Add Ollama backend configuration.
-- [ ] Implement non-streaming Ollama HTTP call with `httpx`.
-- [ ] Translate OpenAI-style request to Ollama chat request.
-- [ ] Translate Ollama response to OpenAI-compatible response.
-- [ ] Add mocked HTTP tests.
+- [x] Add Ollama backend configuration.
+- [x] Implement non-streaming Ollama HTTP call with `httpx`.
+- [x] Translate OpenAI-style request to Ollama chat request.
+- [x] Translate Ollama response to OpenAI-compatible response.
+- [x] Add mocked HTTP tests.
 
 ## Phase 5: SSE `stream=true`
 

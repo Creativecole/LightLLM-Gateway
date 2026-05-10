@@ -10,7 +10,7 @@ class BaseBackend(ABC):
     """Base interface for chat completion backends."""
 
     @abstractmethod
-    def chat_completion(
+    async def chat_completion(
         self,
         request: ChatCompletionRequest,
         model: ModelConfig,

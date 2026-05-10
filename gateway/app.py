@@ -26,9 +26,9 @@ def create_app(config: GatewayConfig | None = None) -> FastAPI:
         return {"metrics": {}}
 
     @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
-    def chat_completions(request: ChatCompletionRequest) -> ChatCompletionResponse:
+    async def chat_completions(request: ChatCompletionRequest) -> ChatCompletionResponse:
         if request.stream:
             raise HTTPException(status_code=400, detail="stream=true is not supported yet")
-        return app.state.model_router.chat_completion(request)
+        return await app.state.model_router.chat_completion(request)
 
     return app

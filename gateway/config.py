@@ -22,6 +22,7 @@ class ModelConfig(BaseModel):
     name: str
     backend: str
     target: str | None = None
+    endpoint: str | None = None
 
 
 class ModelsConfig(BaseModel):

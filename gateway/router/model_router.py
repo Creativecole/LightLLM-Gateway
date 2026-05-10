@@ -4,6 +4,7 @@ from fastapi import HTTPException
 
 from gateway.backends.base import BaseBackend
 from gateway.backends.mock_backend import MockBackend
+from gateway.backends.ollama_backend import OllamaBackend
 from gateway.config import GatewayConfig, ModelConfig
 from gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 
@@ -13,12 +14,13 @@ class ModelRouter:
         self._models_by_name = {model.name: model for model in config.models.items}
         self._backends: dict[str, BaseBackend] = {
             "mock": MockBackend(),
+            "ollama": OllamaBackend(),
         }
 
-    def chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
+    async def chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:
         model = self._find_model(request.model)
         backend = self._find_backend(model)
-        return backend.chat_completion(request, model)
+        return await backend.chat_completion(request, model)
 
     def _find_model(self, model_name: str) -> ModelConfig:
         model = self._models_by_name.get(model_name)

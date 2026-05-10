@@ -147,4 +147,37 @@ The mock backend returns a deterministic assistant message:
 }
 ```
 
+## Ollama Backend
+
+Phase 4 adds non-streaming Ollama support for models configured with `backend: ollama`.
+
+Start Ollama locally and make sure the configured model exists:
+
+```bash
+ollama serve
+ollama pull llama3.1
+```
+
+With the default `config.yaml`, the gateway sends requests for `llama3.1` to:
+
+```text
+http://127.0.0.1:11434/api/chat
+```
+
+Call the gateway with an OpenAI-compatible request:
+
+```bash
+curl -s http://127.0.0.1:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.1",
+    "messages": [
+      {"role": "user", "content": "Write one short sentence about local LLMs."}
+    ],
+    "stream": false
+  }'
+```
+
+`stream=true` is still intentionally unsupported until the SSE streaming phase.
+
 Business functionality should continue to be implemented phase by phase according to `TASKS.md`.

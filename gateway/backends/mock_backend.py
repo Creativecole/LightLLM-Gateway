@@ -9,7 +9,7 @@ from gateway.schemas import ChatCompletionChoice, ChatCompletionRequest, ChatCom
 
 
 class MockBackend(BaseBackend):
-    def chat_completion(
+    async def chat_completion(
         self,
         request: ChatCompletionRequest,
         model: ModelConfig,
