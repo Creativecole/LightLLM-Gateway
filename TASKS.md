@@ -107,11 +107,17 @@ Completed notes:
 
 ## Phase 9: Benchmark Script
 
-- [ ] Create benchmark script.
-- [ ] Support request count and concurrency flags.
-- [ ] Report success, errors, and latency summary.
-- [ ] Default to mock model path.
-- [ ] Document benchmark usage.
+- [x] Create benchmark script.
+- [x] Support request count and concurrency flags.
+- [x] Report success, errors, and latency summary.
+- [x] Default to configured gateway path.
+- [x] Document benchmark usage.
+
+Completed notes:
+
+- `scripts/bench.py` uses `asyncio` and `httpx.AsyncClient`.
+- Supports non-streaming and streaming benchmarks.
+- Writes Markdown reports to `reports/benchmark.md` by default.
 
 ## Phase 10: Frontend Dashboard
 

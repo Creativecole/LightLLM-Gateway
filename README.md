@@ -247,6 +247,41 @@ Core log fields include:
 
 Logs record the authenticated user name, not the raw API key.
 
+## Benchmark
+
+Run the async benchmark client against a running gateway:
+
+```bash
+python scripts/bench.py \
+  --url http://localhost:8000/v1/chat/completions \
+  --api-key sk-demo \
+  --model llama3.1 \
+  --concurrency 10 \
+  --requests 100 \
+  --prompt "hello"
+```
+
+Run a streaming benchmark:
+
+```bash
+python scripts/bench.py \
+  --url http://localhost:8000/v1/chat/completions \
+  --api-key sk-demo \
+  --model llama3.1 \
+  --concurrency 10 \
+  --requests 100 \
+  --stream \
+  --prompt "hello"
+```
+
+The script prints latency, throughput, and failure-rate metrics to the terminal and writes a Markdown report to:
+
+```text
+reports/benchmark.md
+```
+
+Use `--output` to write the report somewhere else.
+
 ## Ollama Backend
 
 The gateway supports non-streaming and streaming Ollama forwarding for models configured with `backend: ollama`.
