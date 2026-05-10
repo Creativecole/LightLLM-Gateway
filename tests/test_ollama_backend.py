@@ -40,6 +40,41 @@ class TimeoutAsyncClient(FakeAsyncClient):
         raise httpx.TimeoutException("timed out")
 
 
+class FakeStreamResponse:
+    def __init__(self, lines: list[str]) -> None:
+        self.lines = lines
+        self.status_code = 200
+
+    async def __aenter__(self) -> "FakeStreamResponse":
+        return self
+
+    async def __aexit__(self, exc_type: object, exc: object, traceback: object) -> None:
+        return None
+
+    def raise_for_status(self) -> None:
+        return None
+
+    async def aiter_lines(self) -> object:
+        for line in self.lines:
+            yield line
+
+
+class FakeStreamingAsyncClient(FakeAsyncClient):
+    stream_requests: list[dict[str, object]] = []
+
+    def stream(self, method: str, url: str, json: dict[str, object]) -> FakeStreamResponse:
+        self.stream_requests.append(
+            {"method": method, "url": url, "json": json, "timeout": self.timeout}
+        )
+        return FakeStreamResponse(
+            [
+                '{"message":{"role":"assistant","content":"Hel"},"done":false}',
+                '{"message":{"role":"assistant","content":"lo"},"done":false}',
+                '{"done":true}',
+            ]
+        )
+
+
 @pytest.mark.asyncio
 async def test_ollama_backend_sends_non_streaming_chat_request(monkeypatch: pytest.MonkeyPatch) -> None:
     FakeAsyncClient.requests = []
@@ -91,3 +126,39 @@ async def test_ollama_backend_timeout_becomes_504(monkeypatch: pytest.MonkeyPatc
 
     assert exc_info.value.status_code == 504
     assert exc_info.value.detail == "Ollama request timed out"
+
+
+@pytest.mark.asyncio
+async def test_ollama_backend_streams_sse_chunks(monkeypatch: pytest.MonkeyPatch) -> None:
+    FakeStreamingAsyncClient.stream_requests = []
+    monkeypatch.setattr(ollama_backend.httpx, "AsyncClient", FakeStreamingAsyncClient)
+    backend = OllamaBackend()
+    request = ChatCompletionRequest(
+        model="llama3.1",
+        messages=[{"role": "user", "content": "Hello"}],
+        stream=True,
+    )
+    model = ModelConfig(
+        name="llama3.1",
+        backend="ollama",
+        target="llama3.1",
+        endpoint="http://ollama.test",
+    )
+
+    chunks = [chunk async for chunk in backend.stream_chat_completion(request, model)]
+
+    assert FakeStreamingAsyncClient.stream_requests == [
+        {
+            "method": "POST",
+            "url": "http://ollama.test/api/chat",
+            "json": {
+                "model": "llama3.1",
+                "messages": [{"role": "user", "content": "Hello"}],
+                "stream": True,
+            },
+            "timeout": 30.0,
+        }
+    ]
+    assert chunks[0] == 'data: {"choices":[{"delta":{"content":"Hel"}}]}\n\n'
+    assert chunks[1] == 'data: {"choices":[{"delta":{"content":"lo"}}]}\n\n'
+    assert chunks[-1] == "data: [DONE]\n\n"

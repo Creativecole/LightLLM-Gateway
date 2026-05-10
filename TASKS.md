@@ -51,11 +51,17 @@ Task status legend:
 
 ## Phase 5: SSE `stream=true`
 
-- [ ] Implement SSE formatting utility.
-- [ ] Add streaming backend interface method.
-- [ ] Implement mock backend streaming.
-- [ ] Implement Ollama streaming translation.
-- [ ] Add tests for SSE chunks and `[DONE]`.
+- [x] Implement SSE formatting utility.
+- [x] Add streaming backend interface method.
+- [x] Implement mock backend streaming.
+- [x] Implement Ollama streaming translation.
+- [x] Add tests for SSE chunks and `[DONE]`.
+
+Completed notes:
+
+- `stream=true` now returns `text/event-stream`.
+- Ollama JSON lines are translated to OpenAI-compatible SSE delta chunks.
+- Streams end with `data: [DONE]`.
 
 ## Phase 6: Auth + Rate Limit
 

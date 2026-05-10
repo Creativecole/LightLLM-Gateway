@@ -1,6 +1,7 @@
 """FastAPI application factory."""
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 
 from gateway.config import GatewayConfig, load_config
 from gateway.router.model_router import ModelRouter
@@ -25,10 +26,15 @@ def create_app(config: GatewayConfig | None = None) -> FastAPI:
     def metrics() -> dict[str, dict[str, object]]:
         return {"metrics": {}}
 
-    @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
-    async def chat_completions(request: ChatCompletionRequest) -> ChatCompletionResponse:
+    @app.post("/v1/chat/completions", response_model=None)
+    async def chat_completions(
+        request: ChatCompletionRequest,
+    ) -> ChatCompletionResponse | StreamingResponse:
         if request.stream:
-            raise HTTPException(status_code=400, detail="stream=true is not supported yet")
+            return StreamingResponse(
+                app.state.model_router.stream_chat_completion(request),
+                media_type="text/event-stream",
+            )
         return await app.state.model_router.chat_completion(request)
 
     return app

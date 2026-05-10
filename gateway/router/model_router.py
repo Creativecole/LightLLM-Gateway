@@ -1,5 +1,7 @@
 """Model-to-backend routing."""
 
+from collections.abc import AsyncIterator
+
 from fastapi import HTTPException
 
 from gateway.backends.base import BaseBackend
@@ -21,6 +23,11 @@ class ModelRouter:
         model = self._find_model(request.model)
         backend = self._find_backend(model)
         return await backend.chat_completion(request, model)
+
+    def stream_chat_completion(self, request: ChatCompletionRequest) -> AsyncIterator[str]:
+        model = self._find_model(request.model)
+        backend = self._find_backend(model)
+        return backend.stream_chat_completion(request, model)
 
     def _find_model(self, model_name: str) -> ModelConfig:
         model = self._models_by_name.get(model_name)

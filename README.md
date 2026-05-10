@@ -2,7 +2,7 @@
 
 LightLLM-Gateway is a lightweight AI infrastructure project for building an OpenAI-compatible gateway in front of local and private LLM backends.
 
-The project is currently in the OpenAI-compatible mock routing phase. The foundation now includes a small application factory, health endpoint, empty metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, project rules, phased tasks, reusable skills, and a repeatable verification script.
+The project is currently in the SSE streaming proxy phase. The foundation now includes a small application factory, health endpoint, empty metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, an Ollama backend, streaming SSE forwarding, project rules, phased tasks, reusable skills, and a repeatable verification script.
 
 ## Architecture
 
@@ -31,7 +31,7 @@ Model Router
 Metrics + Request Logs
 ```
 
-Initial implementation is intentionally minimal. The repository currently includes the FastAPI skeleton, configuration loading, `/api/health`, `/api/info`, `/metrics`, and non-streaming `/v1/chat/completions` for configured mock models.
+Initial implementation is intentionally minimal. The repository currently includes the FastAPI skeleton, configuration loading, `/api/health`, `/api/info`, `/metrics`, and `/v1/chat/completions` for configured mock and Ollama models.
 
 ## Planned MVP
 
@@ -149,7 +149,7 @@ The mock backend returns a deterministic assistant message:
 
 ## Ollama Backend
 
-Phase 4 adds non-streaming Ollama support for models configured with `backend: ollama`.
+The gateway supports non-streaming and streaming Ollama forwarding for models configured with `backend: ollama`.
 
 Start Ollama locally and make sure the configured model exists:
 
@@ -175,9 +175,35 @@ curl -s http://127.0.0.1:8000/v1/chat/completions \
       {"role": "user", "content": "Write one short sentence about local LLMs."}
     ],
     "stream": false
+}'
+```
+
+Call the streaming path with `stream=true`:
+
+```bash
+curl -N http://127.0.0.1:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.1",
+    "messages": [
+      {"role": "user", "content": "Write one short sentence about local LLMs."}
+    ],
+    "stream": true
   }'
 ```
 
-`stream=true` is still intentionally unsupported until the SSE streaming phase.
+Streaming responses use OpenAI-compatible SSE chunks:
+
+```text
+data: {"choices":[{"delta":{"content":"..."}}]}
+
+data: [DONE]
+```
+
+You can also run the Python streaming example:
+
+```bash
+python examples/stream_chat.py
+```
 
 Business functionality should continue to be implemented phase by phase according to `TASKS.md`.

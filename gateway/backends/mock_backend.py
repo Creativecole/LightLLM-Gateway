@@ -2,10 +2,12 @@
 
 import time
 import uuid
+from collections.abc import AsyncIterator
 
 from gateway.backends.base import BaseBackend
 from gateway.config import ModelConfig
 from gateway.schemas import ChatCompletionChoice, ChatCompletionRequest, ChatCompletionResponse, Usage
+from gateway.sse import format_chat_delta, format_done
 
 
 class MockBackend(BaseBackend):
@@ -32,6 +34,14 @@ class MockBackend(BaseBackend):
                 total_tokens=_count_message_tokens(request) + len(content.split()),
             ),
         )
+
+    async def stream_chat_completion(
+        self,
+        request: ChatCompletionRequest,
+        model: ModelConfig,
+    ) -> AsyncIterator[str]:
+        yield format_chat_delta("Hello from MockBackend")
+        yield format_done()
 
 
 def _count_message_tokens(request: ChatCompletionRequest) -> int:

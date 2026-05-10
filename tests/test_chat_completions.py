@@ -71,5 +71,8 @@ def test_chat_completion_stream_true_is_rejected() -> None:
         },
     )
 
-    assert response.status_code == 400
-    assert response.json()["detail"] == "stream=true is not supported yet"
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert "data:" in response.text
+    assert "Hello from MockBackend" in response.text
+    assert response.text.endswith("data: [DONE]\n\n")
