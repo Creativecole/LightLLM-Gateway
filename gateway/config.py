@@ -39,7 +39,7 @@ class ModelsConfig(BaseModel):
 class CacheConfig(BaseModel):
     enabled: bool = True
     ttl_seconds: int = 300
-    max_entries: int = 1024
+    max_size: int = 1024
 
 
 class LoggingConfig(BaseModel):

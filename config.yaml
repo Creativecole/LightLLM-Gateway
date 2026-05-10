@@ -24,7 +24,7 @@ models:
 cache:
   enabled: true
   ttl_seconds: 300
-  max_entries: 1024
+  max_size: 1024
 
 logging:
   level: INFO

@@ -79,11 +79,17 @@ Completed notes:
 
 ## Phase 7: Prompt Cache
 
-- [ ] Implement cache key generation.
-- [ ] Implement in-memory prompt cache.
-- [ ] Apply cache to non-streaming requests.
-- [ ] Add cache metrics.
-- [ ] Add tests for cache hit, miss, and streaming bypass.
+- [x] Implement cache key generation.
+- [x] Implement in-memory prompt cache.
+- [x] Apply cache to non-streaming requests.
+- [x] Add cache hit/miss response markers for future metrics.
+- [x] Add tests for cache hit, miss, and streaming bypass.
+
+Completed notes:
+
+- Prompt cache uses an in-memory LRU keyed by SHA-256.
+- Cache applies only to `stream=false`.
+- Cache key includes model, ordered messages, temperature, and top_p.
 
 ## Phase 8: Metrics + Request Logs
 

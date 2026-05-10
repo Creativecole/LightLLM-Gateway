@@ -2,7 +2,7 @@
 
 LightLLM-Gateway is a lightweight AI infrastructure project for building an OpenAI-compatible gateway in front of local and private LLM backends.
 
-The project is currently in the API key auth and rate limit phase. The foundation now includes a small application factory, health endpoint, empty metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, an Ollama backend, streaming SSE forwarding, API key auth, in-memory per-key rate limiting, project rules, phased tasks, reusable skills, and a repeatable verification script.
+The project is currently in the prompt cache phase. The foundation now includes a small application factory, health endpoint, empty metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, an Ollama backend, streaming SSE forwarding, API key auth, in-memory per-key rate limiting, prompt caching for non-streaming requests, project rules, phased tasks, reusable skills, and a repeatable verification script.
 
 ## Architecture
 
@@ -170,6 +170,29 @@ auth:
 ```
 
 `rpm` means requests per minute. The first implementation uses an in-memory sliding window per API key.
+
+## Prompt Cache
+
+Prompt cache is an in-memory LRU cache for repeated non-streaming chat completion requests. It only applies when `stream=false`; streaming requests always bypass the cache.
+
+Configure it in `config.yaml`:
+
+```yaml
+cache:
+  enabled: true
+  max_size: 1024
+```
+
+Set `enabled: false` to disable prompt caching. `max_size` controls the maximum number of cached responses kept in memory.
+
+The cache key is a SHA-256 hash of:
+
+- `model`
+- ordered `messages`
+- `temperature`
+- `top_p`
+
+Responses include `cache_hit: false` on cache misses and `cache_hit: true` on cache hits while preserving the normal OpenAI-compatible response fields.
 
 ## Ollama Backend
 
