@@ -18,16 +18,50 @@ models:
       backend: mock
       target: mock-small
 
-    # Example Ollama model. Run `ollama pull llama3.1` before selecting it.
+    # Example Ollama models. Run the matching `ollama pull ...` before selecting one.
     - name: llama3.1
       backend: ollama
       target: llama3.1
       endpoint: http://127.0.0.1:11434
 
-    # Example Ollama model. Run `ollama pull qwen2.5:1.5b` before selecting it.
+    - name: llama3.2
+      backend: ollama
+      target: llama3.2
+      endpoint: http://127.0.0.1:11434
+
     - name: qwen2.5
       backend: ollama
+      target: qwen2.5:1.5b
+      endpoint: http://127.0.0.1:11434
+
+    - name: qwen2.5-0.5b
+      backend: ollama
       target: qwen2.5:0.5b
+      endpoint: http://127.0.0.1:11434
+
+    - name: qwen2.5-coder
+      backend: ollama
+      target: qwen2.5-coder:1.5b
+      endpoint: http://127.0.0.1:11434
+
+    - name: mistral
+      backend: ollama
+      target: mistral
+      endpoint: http://127.0.0.1:11434
+
+    - name: gemma2
+      backend: ollama
+      target: gemma2:2b
+      endpoint: http://127.0.0.1:11434
+
+    - name: phi3
+      backend: ollama
+      target: phi3:mini
+      endpoint: http://127.0.0.1:11434
+
+    - name: deepseek-r1
+      backend: ollama
+      target: deepseek-r1:1.5b
       endpoint: http://127.0.0.1:11434
 
 cache:

@@ -28,10 +28,52 @@ models:
       target: llama3.1
       endpoint: http://127.0.0.1:11434
 
+    # Requires: ollama pull llama3.2
+    - name: llama3.2
+      backend: ollama
+      target: llama3.2
+      endpoint: http://127.0.0.1:11434
+
     # Requires: ollama pull qwen2.5:1.5b
     - name: qwen2.5
       backend: ollama
       target: qwen2.5:1.5b
+      endpoint: http://127.0.0.1:11434
+
+    # Requires: ollama pull qwen2.5:0.5b
+    - name: qwen2.5-0.5b
+      backend: ollama
+      target: qwen2.5:0.5b
+      endpoint: http://127.0.0.1:11434
+
+    # Requires: ollama pull qwen2.5-coder:1.5b
+    - name: qwen2.5-coder
+      backend: ollama
+      target: qwen2.5-coder:1.5b
+      endpoint: http://127.0.0.1:11434
+
+    # Requires: ollama pull mistral
+    - name: mistral
+      backend: ollama
+      target: mistral
+      endpoint: http://127.0.0.1:11434
+
+    # Requires: ollama pull gemma2:2b
+    - name: gemma2
+      backend: ollama
+      target: gemma2:2b
+      endpoint: http://127.0.0.1:11434
+
+    # Requires: ollama pull phi3:mini
+    - name: phi3
+      backend: ollama
+      target: phi3:mini
+      endpoint: http://127.0.0.1:11434
+
+    # Requires: ollama pull deepseek-r1:1.5b
+    - name: deepseek-r1
+      backend: ollama
+      target: deepseek-r1:1.5b
       endpoint: http://127.0.0.1:11434
 
 cache:

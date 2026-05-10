@@ -1,149 +1,53 @@
 # LightLLM-Gateway
 
-LightLLM-Gateway is a lightweight AI infrastructure project for building an OpenAI-compatible gateway in front of local and private LLM backends.
+LightLLM-Gateway is a lightweight OpenAI-compatible gateway for local and private LLM backends. It supports Mock and Ollama backends, streaming SSE, API key auth, rate limiting, prompt cache, metrics, structured request logs, benchmark tooling, and a small dashboard.
 
-The project is currently in the metrics and structured request logs phase. The foundation now includes a small application factory, health endpoint, metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, an Ollama backend, streaming SSE forwarding, API key auth, in-memory per-key rate limiting, prompt caching for non-streaming requests, structured JSONL request logs, project rules, phased tasks, reusable skills, and a repeatable verification script.
-
-## Architecture
-
-The planned MVP architecture is:
-
-```text
-Client
-  |
-  v
-FastAPI OpenAI-compatible API
-  |
-  v
-Auth + Rate Limit
-  |
-  v
-Prompt Cache
-  |
-  v
-Model Router
-  |
-  +--> MockBackend
-  |
-  +--> OllamaBackend
-  |
-  v
-Metrics + Request Logs
-```
-
-Initial implementation is intentionally minimal. The repository currently includes the FastAPI skeleton, configuration loading, `/api/health`, `/api/info`, `/metrics`, and `/v1/chat/completions` for configured mock and Ollama models.
-
-## Planned MVP
-
-The MVP will include:
-
-- OpenAI-compatible `/v1/chat/completions`.
-- Model router and deterministic mock backend.
-- Ollama backend for local model calls.
-- SSE streaming for `stream=true`.
-- API key auth and in-memory rate limit.
-- Prompt cache for repeated non-streaming requests.
-- Metrics, request logs, benchmark script, and dashboard.
-
-See `PROJECT_SPEC.md` for the full project specification.
-
-## Development Workflow
-
-Every Agent should follow this loop:
-
-1. Read `AGENTS.md`, `PROJECT_SPEC.md`, and `TASKS.md`.
-2. Identify the active phase.
-3. Use the relevant document in `skills/`.
-4. Make the smallest coherent change.
-5. Add or update tests for behavior changes.
-6. Run `scripts/check.sh`.
-7. Fix failures before handing off.
-
-## Setup
-
-Create and activate a virtual environment, then install dependencies:
+## Quick Start
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-## Run Checks
-
-Run the complete harness verification:
-
-```bash
-scripts/check.sh
-```
-
-The script runs:
-
-- `ruff check .`
-- `pytest`
-- Application import check.
-
-## Run Tests
-
-Run tests directly with:
-
-```bash
-pytest
-```
-
-## Run the App
-
-Start the app through the root entrypoint:
-
-```bash
 python main.py
 ```
 
-Or run uvicorn directly:
+Backend default:
 
-```bash
-uvicorn main:app --reload
+```text
+http://127.0.0.1:8000
 ```
 
-The server reads `config.yaml` by default. The current skeleton exposes:
+Run checks:
 
-- `GET /api/health`
-- `GET /api/info`
-- `GET /metrics`
-- `POST /v1/chat/completions`
+```bash
+bash scripts/check.sh
+```
 
 ## Configuration
 
-The repository includes two configuration files:
+The project loads config in this order:
 
-- `config.example.yaml`: open-source friendly example configuration.
-- `config.yaml`: local development configuration used by default.
+1. `LIGHTLLM_CONFIG`
+2. `config.yaml`
+3. `config.example.yaml`
 
-For a new environment, start by copying the example and editing it:
+For a fresh setup:
 
 ```bash
 cp config.example.yaml config.yaml
 ```
 
-You can also point the gateway at any config file with `LIGHTLLM_CONFIG`:
+Use another config file:
 
 ```bash
 LIGHTLLM_CONFIG=/path/to/config.yaml python main.py
 ```
 
-Config loading order:
+`config.local.yaml` is ignored by git for private local settings.
 
-1. `LIGHTLLM_CONFIG`, if set.
-2. `config.yaml`.
-3. `config.example.yaml`.
+## API
 
-If none of those files exist, startup fails with a clear configuration error.
-
-`config.local.yaml` is ignored by git and can be used for private local experiments.
-
-## API Example
-
-Send a non-streaming OpenAI-compatible chat completion request:
+Non-streaming chat completion:
 
 ```bash
 curl -s http://127.0.0.1:8000/v1/chat/completions \
@@ -151,227 +55,63 @@ curl -s http://127.0.0.1:8000/v1/chat/completions \
   -H "Authorization: Bearer sk-demo" \
   -d '{
     "model": "mock-small",
-    "messages": [
-      {"role": "user", "content": "Say hello"}
-    ],
+    "messages": [{"role": "user", "content": "Say hello"}],
     "stream": false
   }'
 ```
 
-The mock backend returns a deterministic assistant message:
-
-```json
-{
-  "object": "chat.completion",
-  "model": "mock-small",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "Hello from MockBackend"
-      },
-      "finish_reason": "stop"
-    }
-  ]
-}
-```
-
-## API Key Auth And Rate Limit
-
-When `auth.enabled` is `true`, `/v1/chat/completions` requires:
-
-```text
-Authorization: Bearer <api_key>
-```
-
-`GET /api/health` and `GET /metrics` do not require auth.
-
-Configure API keys and per-key request limits in `config.yaml`:
-
-```yaml
-auth:
-  enabled: true
-  api_keys:
-    - key: sk-demo
-      name: demo-user
-      rpm: 60
-```
-
-`rpm` means requests per minute. The first implementation uses an in-memory sliding window per API key.
-
-## Prompt Cache
-
-Prompt cache is an in-memory LRU cache for repeated non-streaming chat completion requests. It only applies when `stream=false`; streaming requests always bypass the cache.
-
-Configure it in `config.yaml`:
-
-```yaml
-cache:
-  enabled: true
-  max_size: 1024
-```
-
-Set `enabled: false` to disable prompt caching. `max_size` controls the maximum number of cached responses kept in memory.
-
-The cache key is a SHA-256 hash of:
-
-- `model`
-- ordered `messages`
-- `temperature`
-- `top_p`
-
-Responses include `cache_hit: false` on cache misses and `cache_hit: true` on cache hits while preserving the normal OpenAI-compatible response fields.
-
-## Metrics
-
-Gateway metrics are exposed as JSON:
+Streaming:
 
 ```bash
-curl -s http://127.0.0.1:8000/metrics
+curl -N http://127.0.0.1:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-demo" \
+  -d '{
+    "model": "llama3.1",
+    "messages": [{"role": "user", "content": "hello"}],
+    "stream": true
+  }'
 ```
 
-The endpoint currently reports:
+Useful endpoints:
 
-- `total_requests`
-- `success_requests`
-- `failed_requests`
-- `active_requests`
-- `cache_hits`
-- `cache_hit_rate`
-- `avg_latency_ms`
-- `avg_ttft_ms`
-- `requests_per_model`
-- `requests_per_backend`
-- `error_rate`
-
-`GET /metrics` is public even when API key auth is enabled.
-
-## Structured Request Logs
-
-Each chat completion request is written as one JSON object per line. The default log file is:
-
-```text
-logs/requests.jsonl
-```
-
-Configure the path in `config.yaml`:
-
-```yaml
-logging:
-  request_logs_enabled: true
-  request_log_path: logs/requests.jsonl
-```
-
-Core log fields include:
-
-- `request_id`
-- `model`
-- `backend`
-- `stream`
-- `cache_hit`
-- `ttft_ms`
-- `total_latency_ms`
-- `status`
-
-Logs record the authenticated user name, not the raw API key.
-
-## Benchmark
-
-Run the async benchmark client against a running gateway:
-
-```bash
-python scripts/bench.py \
-  --url http://localhost:8000/v1/chat/completions \
-  --api-key sk-demo \
-  --model llama3.1 \
-  --concurrency 10 \
-  --requests 100 \
-  --prompt "hello"
-```
-
-Run a streaming benchmark:
-
-```bash
-python scripts/bench.py \
-  --url http://localhost:8000/v1/chat/completions \
-  --api-key sk-demo \
-  --model llama3.1 \
-  --concurrency 10 \
-  --requests 100 \
-  --stream \
-  --prompt "hello"
-```
-
-The script prints latency, throughput, and failure-rate metrics to the terminal and writes a Markdown report to:
-
-```text
-reports/benchmark.md
-```
-
-Use `--output` to write the report somewhere else.
-
-## Dashboard
-
-The lightweight dashboard lives in `frontend/` and provides:
-
-- Metrics cards from `GET /metrics`
-- Recent request logs from `GET /api/requests`
-- Model configuration from `GET /api/models`
-- A Chat Playground for non-streaming and streaming chat completions
-
-Start the backend first:
-
-```bash
-python main.py
-```
-
-Start the frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-The frontend reads the backend base URL from `VITE_GATEWAY_API_BASE`. If it is not set, it defaults to:
-
-```text
-http://127.0.0.1:8000
-```
-
-Example:
-
-```bash
-VITE_GATEWAY_API_BASE=http://127.0.0.1:8000 npm run dev
-```
-
-## Ollama Backend
-
-The gateway supports non-streaming and streaming Ollama forwarding for models configured with `backend: ollama`.
+- `GET /api/health`
+- `GET /api/models`
+- `GET /api/requests`
+- `GET /metrics`
+- `POST /v1/chat/completions`
 
 ## Use Your Own Ollama Model
 
-Start Ollama locally and check which models you already have:
+Check local models:
 
 ```bash
-ollama serve
 ollama list
 ```
 
-If you do not have a model yet, pull one:
+Pull one if needed:
 
 ```bash
 ollama pull llama3.1
+# or
+ollama pull qwen2.5:1.5b
 ```
 
-Or:
+The example configs include several Ollama entries you can enable after pulling the matching local model:
 
-```bash
-ollama pull qwen2.5:0.5b
-```
+| Gateway model | Ollama target | Pull command |
+| --- | --- | --- |
+| `llama3.1` | `llama3.1` | `ollama pull llama3.1` |
+| `llama3.2` | `llama3.2` | `ollama pull llama3.2` |
+| `qwen2.5` | `qwen2.5:1.5b` | `ollama pull qwen2.5:1.5b` |
+| `qwen2.5-0.5b` | `qwen2.5:0.5b` | `ollama pull qwen2.5:0.5b` |
+| `qwen2.5-coder` | `qwen2.5-coder:1.5b` | `ollama pull qwen2.5-coder:1.5b` |
+| `mistral` | `mistral` | `ollama pull mistral` |
+| `gemma2` | `gemma2:2b` | `ollama pull gemma2:2b` |
+| `phi3` | `phi3:mini` | `ollama pull phi3:mini` |
+| `deepseek-r1` | `deepseek-r1:1.5b` | `ollama pull deepseek-r1:1.5b` |
 
-Then edit `config.yaml` so `target` exactly matches a model from `ollama list`:
+Edit `config.yaml`:
 
 ```yaml
 models:
@@ -383,78 +123,55 @@ models:
       endpoint: http://127.0.0.1:11434
 ```
 
-Field meanings:
+`name` is the Gateway-facing model name. `target` must match `ollama list`. `endpoint` is the Ollama base URL, without `/api/chat`.
 
-- `name` is the model name exposed by LightLLM-Gateway clients.
-- `target` is the real Ollama model name and must match `ollama list`.
-- `endpoint` is the Ollama base URL. Use `http://127.0.0.1:11434`, without `/api/chat`.
-
-The gateway sends Ollama requests to:
-
-```text
-http://127.0.0.1:11434/api/chat
-```
-
-Call the gateway with an OpenAI-compatible request:
+## Dashboard
 
 ```bash
-curl -s http://127.0.0.1:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-demo" \
-  -d '{
-    "model": "llama3.1",
-    "messages": [
-      {"role": "user", "content": "Write one short sentence about local LLMs."}
-    ],
-    "stream": false
-}'
+cd frontend
+npm install
+npm run dev
 ```
 
-Call the streaming path with `stream=true`:
+Open the Vite URL shown in the terminal. The frontend uses `VITE_GATEWAY_API_BASE`, defaulting to `http://127.0.0.1:8000`.
+
+Production build:
 
 ```bash
-curl -N http://127.0.0.1:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-demo" \
-  -d '{
-    "model": "llama3.1",
-    "messages": [
-      {"role": "user", "content": "Write one short sentence about local LLMs."}
-    ],
-    "stream": true
-  }'
+cd frontend
+npm run build
 ```
 
-Streaming responses use OpenAI-compatible SSE chunks:
-
-```text
-data: {"choices":[{"delta":{"content":"..."}}]}
-
-data: [DONE]
-```
-
-You can also run the Python streaming example:
+## Benchmark
 
 ```bash
-python examples/stream_chat.py
+python scripts/bench.py \
+  --api-key sk-demo \
+  --model llama3.1 \
+  --concurrency 10 \
+  --requests 100
 ```
+
+Streaming benchmark:
+
+```bash
+python scripts/bench.py --stream --api-key sk-demo --model llama3.1
+```
+
+Reports are written to `reports/benchmark.md` by default.
+
+## Observability
+
+- Metrics: `GET /metrics`
+- Request logs: `logs/requests.jsonl`
+- Recent logs API: `GET /api/requests`
+
+Logs record user names, not raw API keys.
 
 ## Common Errors
 
-`Ollama returned HTTP 404`
+`Ollama returned HTTP 404`: the configured `target` model is not available locally. Run `ollama list` or `ollama pull <model>`.
 
-Usually means the configured `target` model does not exist locally. Run `ollama list`, then either pull the model or update `target` in `config.yaml`.
+`Missing Authorization header`: add `Authorization: Bearer sk-demo` when calling `/v1/chat/completions`.
 
-`Missing Authorization header`
-
-`/v1/chat/completions` requires an API key when auth is enabled:
-
-```text
-Authorization: Bearer sk-demo
-```
-
-Requests page only shows mock traffic
-
-The gateway may be using `mock-small` as the default model, or the Dashboard Playground may have `mock-small` selected. Select an Ollama model such as `llama3.1` after confirming it exists locally.
-
-Business functionality should continue to be implemented phase by phase according to `TASKS.md`.
+Requests page only shows mock traffic: select an Ollama model in the Playground or change `models.default` from `mock-small`.
