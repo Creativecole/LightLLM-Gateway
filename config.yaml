@@ -29,3 +29,4 @@ cache:
 logging:
   level: INFO
   request_logs_enabled: true
+  request_log_path: logs/requests.jsonl

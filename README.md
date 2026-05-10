@@ -2,7 +2,7 @@
 
 LightLLM-Gateway is a lightweight AI infrastructure project for building an OpenAI-compatible gateway in front of local and private LLM backends.
 
-The project is currently in the prompt cache phase. The foundation now includes a small application factory, health endpoint, empty metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, an Ollama backend, streaming SSE forwarding, API key auth, in-memory per-key rate limiting, prompt caching for non-streaming requests, project rules, phased tasks, reusable skills, and a repeatable verification script.
+The project is currently in the metrics and structured request logs phase. The foundation now includes a small application factory, health endpoint, metrics endpoint, configuration loader, OpenAI-compatible chat schema, a model router, a deterministic mock backend, an Ollama backend, streaming SSE forwarding, API key auth, in-memory per-key rate limiting, prompt caching for non-streaming requests, structured JSONL request logs, project rules, phased tasks, reusable skills, and a repeatable verification script.
 
 ## Architecture
 
@@ -193,6 +193,59 @@ The cache key is a SHA-256 hash of:
 - `top_p`
 
 Responses include `cache_hit: false` on cache misses and `cache_hit: true` on cache hits while preserving the normal OpenAI-compatible response fields.
+
+## Metrics
+
+Gateway metrics are exposed as JSON:
+
+```bash
+curl -s http://127.0.0.1:8000/metrics
+```
+
+The endpoint currently reports:
+
+- `total_requests`
+- `success_requests`
+- `failed_requests`
+- `active_requests`
+- `cache_hits`
+- `cache_hit_rate`
+- `avg_latency_ms`
+- `avg_ttft_ms`
+- `requests_per_model`
+- `requests_per_backend`
+- `error_rate`
+
+`GET /metrics` is public even when API key auth is enabled.
+
+## Structured Request Logs
+
+Each chat completion request is written as one JSON object per line. The default log file is:
+
+```text
+logs/requests.jsonl
+```
+
+Configure the path in `config.yaml`:
+
+```yaml
+logging:
+  request_logs_enabled: true
+  request_log_path: logs/requests.jsonl
+```
+
+Core log fields include:
+
+- `request_id`
+- `model`
+- `backend`
+- `stream`
+- `cache_hit`
+- `ttft_ms`
+- `total_latency_ms`
+- `status`
+
+Logs record the authenticated user name, not the raw API key.
 
 ## Ollama Backend
 

@@ -93,11 +93,17 @@ Completed notes:
 
 ## Phase 8: Metrics + Request Logs
 
-- [ ] Add metrics collector.
-- [ ] Add JSON metrics endpoint.
-- [ ] Add request log model.
-- [ ] Add recent request logs endpoint.
-- [ ] Add tests for metrics and logs.
+- [x] Add metrics collector.
+- [x] Add JSON metrics endpoint.
+- [x] Add request log model.
+- [x] Add structured JSONL request logs.
+- [x] Add tests for metrics and logs.
+
+Completed notes:
+
+- `/metrics` reports request counters, latency averages, cache hits, TTFT, model/backend counts, and error rate.
+- Chat completions write structured JSONL records to `logging.request_log_path`.
+- Streaming requests record metrics and logs after the stream finishes.
 
 ## Phase 9: Benchmark Script
 

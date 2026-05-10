@@ -29,6 +29,9 @@ class ModelRouter:
         backend = self._find_backend(model)
         return backend.stream_chat_completion(request, model)
 
+    def backend_name_for_model(self, model_name: str) -> str:
+        return self._find_model(model_name).backend
+
     def _find_model(self, model_name: str) -> ModelConfig:
         model = self._models_by_name.get(model_name)
         if model is None:

@@ -45,6 +45,7 @@ class CacheConfig(BaseModel):
 class LoggingConfig(BaseModel):
     level: str = "INFO"
     request_logs_enabled: bool = True
+    request_log_path: str = "logs/requests.jsonl"
 
 
 class GatewayConfig(BaseModel):

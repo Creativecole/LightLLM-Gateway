@@ -89,7 +89,7 @@ def test_metrics_does_not_require_auth() -> None:
     response = client.get("/metrics")
 
     assert response.status_code == 200
-    assert response.json() == {"metrics": {}}
+    assert "total_requests" in response.json()
 
 
 def test_rate_limit_exceeded_returns_429() -> None:
