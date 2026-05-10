@@ -1,0 +1,15 @@
+.env
+.env.*
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+logs/
+*.jsonl
+*.log
+*.pyc
+.DS_Store
+node_modules/
+dist/
+build/

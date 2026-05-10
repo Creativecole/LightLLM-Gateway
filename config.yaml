@@ -1,0 +1,28 @@
+server:
+  host: 127.0.0.1
+  port: 8000
+  reload: false
+
+auth:
+  enabled: false
+  api_keys:
+    - dev-token
+
+models:
+  default: mock-small
+  items:
+    - name: mock-small
+      backend: mock
+      target: mock-small
+    - name: llama3.2
+      backend: ollama
+      target: llama3.2
+
+cache:
+  enabled: true
+  ttl_seconds: 300
+  max_entries: 1024
+
+logging:
+  level: INFO
+  request_logs_enabled: true
