@@ -1,5 +1,6 @@
 """Application configuration loading."""
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -57,10 +58,37 @@ class GatewayConfig(BaseModel):
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
 
 
-def load_config(path: str | Path = "config.yaml") -> GatewayConfig:
-    config_path = Path(path)
-    if not config_path.exists():
-        return GatewayConfig()
+CONFIG_ENV_VAR = "LIGHTLLM_CONFIG"
+DEFAULT_CONFIG_PATH = Path("config.yaml")
+EXAMPLE_CONFIG_PATH = Path("config.example.yaml")
 
+
+def load_config(path: str | Path | None = None) -> GatewayConfig:
+    config_path = _resolve_config_path(path)
     raw_config: dict[str, Any] = yaml.safe_load(config_path.read_text()) or {}
     return GatewayConfig.model_validate(raw_config)
+
+
+def _resolve_config_path(path: str | Path | None = None) -> Path:
+    if path is not None:
+        return _existing_path(Path(path))
+
+    env_path = os.getenv(CONFIG_ENV_VAR)
+    if env_path:
+        return _existing_path(Path(env_path))
+
+    if DEFAULT_CONFIG_PATH.exists():
+        return DEFAULT_CONFIG_PATH
+    if EXAMPLE_CONFIG_PATH.exists():
+        return EXAMPLE_CONFIG_PATH
+
+    raise FileNotFoundError(
+        "No configuration file found. Create config.yaml, copy config.example.yaml, "
+        f"or set {CONFIG_ENV_VAR}=/path/to/config.yaml."
+    )
+
+
+def _existing_path(path: Path) -> Path:
+    if path.exists():
+        return path
+    raise FileNotFoundError(f"Configuration file not found: {path}")

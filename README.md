@@ -112,6 +112,35 @@ The server reads `config.yaml` by default. The current skeleton exposes:
 - `GET /metrics`
 - `POST /v1/chat/completions`
 
+## Configuration
+
+The repository includes two configuration files:
+
+- `config.example.yaml`: open-source friendly example configuration.
+- `config.yaml`: local development configuration used by default.
+
+For a new environment, start by copying the example and editing it:
+
+```bash
+cp config.example.yaml config.yaml
+```
+
+You can also point the gateway at any config file with `LIGHTLLM_CONFIG`:
+
+```bash
+LIGHTLLM_CONFIG=/path/to/config.yaml python main.py
+```
+
+Config loading order:
+
+1. `LIGHTLLM_CONFIG`, if set.
+2. `config.yaml`.
+3. `config.example.yaml`.
+
+If none of those files exist, startup fails with a clear configuration error.
+
+`config.local.yaml` is ignored by git and can be used for private local experiments.
+
 ## API Example
 
 Send a non-streaming OpenAI-compatible chat completion request:
@@ -321,14 +350,46 @@ VITE_GATEWAY_API_BASE=http://127.0.0.1:8000 npm run dev
 
 The gateway supports non-streaming and streaming Ollama forwarding for models configured with `backend: ollama`.
 
-Start Ollama locally and make sure the configured model exists:
+## Use Your Own Ollama Model
+
+Start Ollama locally and check which models you already have:
 
 ```bash
 ollama serve
+ollama list
+```
+
+If you do not have a model yet, pull one:
+
+```bash
 ollama pull llama3.1
 ```
 
-With the default `config.yaml`, the gateway sends requests for `llama3.1` to:
+Or:
+
+```bash
+ollama pull qwen2.5:0.5b
+```
+
+Then edit `config.yaml` so `target` exactly matches a model from `ollama list`:
+
+```yaml
+models:
+  default: llama3.1
+  items:
+    - name: llama3.1
+      backend: ollama
+      target: llama3.1
+      endpoint: http://127.0.0.1:11434
+```
+
+Field meanings:
+
+- `name` is the model name exposed by LightLLM-Gateway clients.
+- `target` is the real Ollama model name and must match `ollama list`.
+- `endpoint` is the Ollama base URL. Use `http://127.0.0.1:11434`, without `/api/chat`.
+
+The gateway sends Ollama requests to:
 
 ```text
 http://127.0.0.1:11434/api/chat
@@ -377,5 +438,23 @@ You can also run the Python streaming example:
 ```bash
 python examples/stream_chat.py
 ```
+
+## Common Errors
+
+`Ollama returned HTTP 404`
+
+Usually means the configured `target` model does not exist locally. Run `ollama list`, then either pull the model or update `target` in `config.yaml`.
+
+`Missing Authorization header`
+
+`/v1/chat/completions` requires an API key when auth is enabled:
+
+```text
+Authorization: Bearer sk-demo
+```
+
+Requests page only shows mock traffic
+
+The gateway may be using `mock-small` as the default model, or the Dashboard Playground may have `mock-small` selected. Select an Ollama model such as `llama3.1` after confirming it exists locally.
 
 Business functionality should continue to be implemented phase by phase according to `TASKS.md`.

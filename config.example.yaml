@@ -9,25 +9,29 @@ auth:
     - key: sk-demo
       name: demo-user
       rpm: 60
+    - key: sk-test
+      name: test-user
+      rpm: 120
 
 models:
-  # Local development default. Use mock-small when you do not have Ollama running.
+  # Use mock-small when you want the gateway to run without Ollama.
+  # Change this to llama3.1 or qwen2.5 after pulling the model locally.
   default: mock-small
   items:
     - name: mock-small
       backend: mock
       target: mock-small
 
-    # Example Ollama model. Run `ollama pull llama3.1` before selecting it.
+    # Requires: ollama pull llama3.1
     - name: llama3.1
       backend: ollama
       target: llama3.1
       endpoint: http://127.0.0.1:11434
 
-    # Example Ollama model. Run `ollama pull qwen2.5:1.5b` before selecting it.
+    # Requires: ollama pull qwen2.5:1.5b
     - name: qwen2.5
       backend: ollama
-      target: qwen2.5:0.5b
+      target: qwen2.5:1.5b
       endpoint: http://127.0.0.1:11434
 
 cache:
