@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from gateway.backends.base import BaseBackend
 from gateway.backends.mock_backend import MockBackend
 from gateway.backends.ollama_backend import OllamaBackend
+from gateway.backends.vllm_backend import VLLMBackend
 from gateway.config import GatewayConfig, ModelConfig
 from gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
 
@@ -17,6 +18,7 @@ class ModelRouter:
         self._backends: dict[str, BaseBackend] = {
             "mock": MockBackend(),
             "ollama": OllamaBackend(),
+            "vllm": VLLMBackend(),
         }
 
     async def chat_completion(self, request: ChatCompletionRequest) -> ChatCompletionResponse:

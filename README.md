@@ -125,6 +125,57 @@ models:
 
 `name` is the Gateway-facing model name. `target` must match `ollama list`. `endpoint` is the Ollama base URL, without `/api/chat`.
 
+## Use vLLM Backend
+
+Start a vLLM OpenAI-compatible server:
+
+```bash
+python -m vllm.entrypoints.openai.api_server \
+  --model Qwen/Qwen2.5-1.5B-Instruct \
+  --host 127.0.0.1 \
+  --port 8001
+```
+
+Configure LightLLM-Gateway:
+
+```yaml
+models:
+  default: qwen-vllm
+  items:
+    - name: qwen-vllm
+      backend: vllm
+      target: Qwen/Qwen2.5-1.5B-Instruct
+      endpoint: http://127.0.0.1:8001
+```
+
+`endpoint` is the vLLM server root URL, without `/v1/chat/completions`. `target` must match the model used to start vLLM. `name` is the Gateway-facing model name. Non-streaming responses rewrite `model` back to the Gateway-facing name.
+
+Non-streaming request:
+
+```bash
+curl http://127.0.0.1:8000/v1/chat/completions \
+  -H "Authorization: Bearer sk-demo" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen-vllm",
+    "messages": [{"role": "user", "content": "hello"}],
+    "stream": false
+  }'
+```
+
+Streaming request:
+
+```bash
+curl -N http://127.0.0.1:8000/v1/chat/completions \
+  -H "Authorization: Bearer sk-demo" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen-vllm",
+    "messages": [{"role": "user", "content": "hello"}],
+    "stream": true
+  }'
+```
+
 ## Dashboard
 
 ```bash
@@ -171,6 +222,8 @@ Logs record user names, not raw API keys.
 ## Common Errors
 
 `Ollama returned HTTP 404`: the configured `target` model is not available locally. Run `ollama list` or `ollama pull <model>`.
+
+`vLLM returned HTTP 404`: check that the vLLM server is running, `target` matches the served model, and `endpoint` does not include `/v1/chat/completions`.
 
 `Missing Authorization header`: add `Authorization: Bearer sk-demo` when calling `/v1/chat/completions`.
 

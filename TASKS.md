@@ -132,3 +132,17 @@ Completed notes:
 - Added React/Vite/TypeScript/Tailwind dashboard in `frontend/`.
 - Added `GET /api/requests` and `GET /api/models`.
 - Playground supports `stream=false` and `stream=true` chat calls.
+
+## Phase 11: vLLM Backend
+
+- [x] Implement `VLLMBackend` `stream=false`.
+- [x] Implement `VLLMBackend` `stream=true`.
+- [x] Integrate `backend: vllm` in `ModelRouter`.
+- [x] Add mocked vLLM backend tests.
+- [x] Document vLLM setup and usage.
+
+Completed notes:
+
+- vLLM requests are forwarded to `{endpoint}/v1/chat/completions`.
+- Gateway model names are translated to configured vLLM `target` model names.
+- Streaming SSE chunks are forwarded and `[DONE]` is not duplicated.

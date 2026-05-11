@@ -31,6 +31,12 @@ def test_models_returns_configured_models(tmp_path: Path) -> None:
                         target="llama3.1:8b",
                         endpoint="http://127.0.0.1:11434",
                         max_context_tokens=8192,
+                    ),
+                    ModelConfig(
+                        name="qwen-vllm",
+                        backend="vllm",
+                        target="Qwen/Qwen2.5-1.5B-Instruct",
+                        endpoint="http://127.0.0.1:8001",
                     )
                 ]
             ),
@@ -48,7 +54,14 @@ def test_models_returns_configured_models(tmp_path: Path) -> None:
             "endpoint": "http://127.0.0.1:11434",
             "model_name": "llama3.1:8b",
             "max_context_tokens": 8192,
-        }
+        },
+        {
+            "model": "qwen-vllm",
+            "backend": "vllm",
+            "endpoint": "http://127.0.0.1:8001",
+            "model_name": "Qwen/Qwen2.5-1.5B-Instruct",
+            "max_context_tokens": None,
+        },
     ]
 
 

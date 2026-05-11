@@ -14,9 +14,9 @@ auth:
       rpm: 120
 
 models:
-  # Use mock-small when you want the gateway to run without Ollama.
-  # Change this to llama3.1 or qwen2.5 after pulling the model locally.
-  default: mock-small
+  # Use mock-small when you want the gateway to run without Ollama or vLLM.
+  # Change this to an Ollama or vLLM model after starting the matching server.
+  default: qwen-vllm
   items:
     - name: mock-small
       backend: mock
@@ -75,6 +75,17 @@ models:
       backend: ollama
       target: deepseek-r1:1.5b
       endpoint: http://127.0.0.1:11434
+
+    # Requires a vLLM OpenAI-compatible server on port 8001.
+    # Example:
+    # python -m vllm.entrypoints.openai.api_server \
+    #   --model Qwen/Qwen2.5-1.5B-Instruct \
+    #   --host 127.0.0.1 \
+    #   --port 8001
+    - name: qwen-vllm
+      backend: vllm
+      target: Qwen/Qwen2.5-1.5B-Instruct
+      endpoint: http://127.0.0.1:8001
 
 cache:
   enabled: true

@@ -120,6 +120,27 @@ def test_cache_disabled_does_not_cache() -> None:
     assert "cache_hit" not in second_response.json()
 
 
+def test_vllm_non_streaming_requests_use_prompt_cache() -> None:
+    client, router = _create_test_client()
+
+    first_response = client.post("/v1/chat/completions", json=_payload(model="qwen-vllm"))
+    second_response = client.post("/v1/chat/completions", json=_payload(model="qwen-vllm"))
+
+    assert router.chat_calls == 1
+    assert first_response.json()["cache_hit"] is False
+    assert second_response.json()["cache_hit"] is True
+
+
+def test_vllm_streaming_requests_do_not_use_prompt_cache() -> None:
+    client, router = _create_test_client()
+
+    client.post("/v1/chat/completions", json=_payload(model="qwen-vllm", stream=True))
+    client.post("/v1/chat/completions", json=_payload(model="qwen-vllm", stream=True))
+
+    assert router.chat_calls == 0
+    assert router.stream_calls == 2
+
+
 def test_prompt_cache_max_size_evicts_oldest_entry() -> None:
     cache = PromptCache(max_size=1)
     first_request = ChatCompletionRequest.model_validate(_payload(messages=[{"role": "user", "content": "One"}]))
